@@ -52,7 +52,7 @@ def fetch_image_from_track(uri, quality):
     return image
 
 uri = fetch_most_streamed_song_uri()
-print(fetch_image_from_track(uri))
+#print(fetch_image_from_track(uri, 1))
 
 
 

@@ -48,8 +48,8 @@ def fetch_most_streamed_song_uri():
 #0 represents highest quality, 1 is medium, 2 is low.
 def fetch_image_from_track(uri, quality):
     track = sp.track(uri)
-    image = track['album']['images'][2]
-    return image
+    image = track['album']['images'][quality]
+    return image['url']
 
 uri = fetch_most_streamed_song_uri()
 #print(fetch_image_from_track(uri, 1))

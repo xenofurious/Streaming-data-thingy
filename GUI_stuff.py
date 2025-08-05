@@ -15,7 +15,23 @@ os.environ["QT_API"] = "pyqt6"
 #constants
 padding = 10
 
-class MainWindow(QMainWindow):
+#stylesheets - this really should be in its own script at some point.
+big_box_widget_stylesheet_thing = f"""
+            QFrame {{
+                background-color: #444;
+                padding: {padding}px;
+                margin: 0px;
+                }}
+        """
+small_box_widget_stylesheet_thing = f"""
+    QFrame {{
+        background-color: #333;
+        padding: {padding}px;
+        margin: 0px;
+        }}
+"""
+
+class main_window(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("My nuts hurt")
@@ -28,62 +44,8 @@ class MainWindow(QMainWindow):
         main_layout = QHBoxLayout()
         container.setLayout(main_layout)
 
-        big_box_widget_stylesheet_thing = f"""
-            QFrame {{
-                background-color: #444;
-                padding: {padding}px;
-                margin: 0px;
-                }}
-        """
-        small_box_widget_stylesheet_thing = f"""
-            QFrame {{
-                background-color: #333;
-                padding: {padding}px;
-                margin: 0px;
-                }}
-        """
-
-        #central frame
-        central_frame = QFrame()
-        central_frame.setFrameShape(QFrame.Box)
-        central_frame.setStyleSheet(big_box_widget_stylesheet_thing)
-
-        #central frame contents
-        central_layout = QVBoxLayout()
-        central_layout.setAlignment(Qt.AlignTop)
-        central_layout.setContentsMargins(0, 0, 0, 0)
-        central_frame.setLayout(central_layout)
-
-        #central frame subframe
-        sub_central_frame = QFrame()
-        sub_central_frame.setFrameShape(QFrame.Box)
-        sub_central_frame.setStyleSheet(small_box_widget_stylesheet_thing)
-        sub_central_frame.setFixedHeight(100)
-
-
-        #central frame subframe contents
-        sub_central_layout = QHBoxLayout()
-        sub_central_layout.setContentsMargins(0, 0, 0, 0)
-        sub_central_frame.setLayout(sub_central_layout)
-
-
-        image_url = streaming_data.fetch_image_from_track(streaming_data.fetch_most_streamed_song_uri(), 2)
-        image_label = self.display_image(image_url, sub_central_frame.height()-2*padding)
-        sub_central_layout.addWidget(image_label)
-        central_layout.addWidget(sub_central_frame)
-
-        #sidebar frame
-        sidebar_frame = QFrame()
-        sidebar_frame.setFrameShape(QFrame.Box)
-        sidebar_frame.setStyleSheet(big_box_widget_stylesheet_thing)
-        sidebar_frame.setMinimumWidth(150)
-        sidebar_frame.setMaximumWidth(250)
-
-        #sidebar frame contents
-        sidebar_layout = QVBoxLayout()
-        sidebar_layout.setContentsMargins(0, 0, 0, 0)
-        sidebar_layout.addWidget(QLabel("sidebar widget content"))
-        sidebar_frame.setLayout(sidebar_layout)
+        central_frame = CentralFrame()
+        sidebar_frame = SidebarFrame()
 
         #vertical qsplitter between the main window and the sidebar
         splitter = QSplitter(Qt.Horizontal)
@@ -98,8 +60,62 @@ class MainWindow(QMainWindow):
         #adding the widgets
         main_layout.addWidget(splitter)
 
+
+class CentralFrame(QFrame):
+    def __init__(self):
+        super().__init__()
+
+        # central frame
+        self.setFrameShape(QFrame.Box)
+        self.setStyleSheet(big_box_widget_stylesheet_thing)
+
+        # central frame contents
+        central_layout = QVBoxLayout()
+        central_layout.setAlignment(Qt.AlignTop)
+        central_layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(central_layout)
+
+        #adding the subframe
+        sub_central_frame = SubCentralFrame()
+        central_layout.addWidget(sub_central_frame)
+
+class SubCentralFrame(QFrame):
+    def __init__(self):
+        super().__init__()
+
+        #central frame subframe
+        self.setFrameShape(QFrame.Box)
+        self.setStyleSheet(small_box_widget_stylesheet_thing)
+        self.setFixedHeight(100)
+
+
+        #central frame subframe contents
+        sub_central_layout = QHBoxLayout()
+        sub_central_layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(sub_central_layout)
+
+
+        image_url = streaming_data.fetch_image_from_track(streaming_data.fetch_most_streamed_song_uri(), 2)
+        image_label = self.display_image(image_url, self.height()-2*padding)
+        sub_central_layout.addWidget(image_label)
+
+class SidebarFrame(QFrame):
+    def __init__(self):
+        super().__init__()
+
+        #sidebar frame
+        self.setFrameShape(QFrame.Box)
+        self.setStyleSheet(big_box_widget_stylesheet_thing)
+        self.setMinimumWidth(150)
+        self.setMaximumWidth(250)
+
+        #sidebar frame contents
+        sidebar_layout = QVBoxLayout()
+        sidebar_layout.setContentsMargins(0, 0, 0, 0)
+        sidebar_layout.addWidget(QLabel("sidebar widget content"))
+        self.setLayout(sidebar_layout)
+
     def display_image(self, image_url, height):
-        print(height)
         response = requests.get(image_url)
         image_pixmap = QPixmap()
         image_pixmap.loadFromData(
@@ -112,7 +128,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = main_window()
     window.show()
     sys.exit(app.exec_())
 

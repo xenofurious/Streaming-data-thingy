@@ -5,10 +5,6 @@ from dotenv import load_dotenv
 import os
 import pandas as pd
 
-
-
-
-
 # generating auth key
 
 load_dotenv()

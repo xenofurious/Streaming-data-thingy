@@ -5,13 +5,15 @@ from io import BytesIO
 import sys
 import os
 
-import main
 import main as streaming_data
 import requests
 
 # some UI stuff setup?
-os.environ["QT_API"] = "pyqt5"
+os.environ["QT_API"] = "pyqt6"
 
+
+#constants
+padding = 10
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -26,37 +28,60 @@ class MainWindow(QMainWindow):
         main_layout = QHBoxLayout()
         container.setLayout(main_layout)
 
-        big_box_widget_stylesheet_thing = """
-            QFrame {
+        big_box_widget_stylesheet_thing = f"""
+            QFrame {{
                 background-color: #444;
-                padding: 4px;
+                padding: {padding}px;
                 margin: 0px;
-                }
+                }}
+        """
+        small_box_widget_stylesheet_thing = f"""
+            QFrame {{
+                background-color: #333;
+                padding: {padding}px;
+                margin: 0px;
+                }}
         """
 
-
-        #central widget frame
+        #central frame
         central_frame = QFrame()
         central_frame.setFrameShape(QFrame.Box)
         central_frame.setStyleSheet(big_box_widget_stylesheet_thing)
 
-        #central widget contents
+        #central frame contents
         central_layout = QVBoxLayout()
-        image_url = main.fetch_image_from_track(main.fetch_most_streamed_song_uri(), 0)
-        print(image_url)
-        image_label = display_image(image_url)
-        central_layout.addWidget(image_label)
+        central_layout.setAlignment(Qt.AlignTop)
+        central_layout.setContentsMargins(0, 0, 0, 0)
         central_frame.setLayout(central_layout)
 
-        #sidebar widget frame
+        #central frame subframe
+        sub_central_frame = QFrame()
+        sub_central_frame.setFrameShape(QFrame.Box)
+        sub_central_frame.setStyleSheet(small_box_widget_stylesheet_thing)
+        sub_central_frame.setFixedHeight(100)
+
+
+        #central frame subframe contents
+        sub_central_layout = QHBoxLayout()
+        sub_central_layout.setContentsMargins(0, 0, 0, 0)
+        sub_central_frame.setLayout(sub_central_layout)
+
+
+        image_url = streaming_data.fetch_image_from_track(streaming_data.fetch_most_streamed_song_uri(), 2)
+        image_label = self.display_image(image_url, sub_central_frame.height()-2*padding)
+        sub_central_layout.addWidget(image_label)
+        central_layout.addWidget(sub_central_frame)
+
+        #sidebar frame
         sidebar_frame = QFrame()
         sidebar_frame.setFrameShape(QFrame.Box)
         sidebar_frame.setStyleSheet(big_box_widget_stylesheet_thing)
         sidebar_frame.setMinimumWidth(150)
         sidebar_frame.setMaximumWidth(250)
 
-        #sidebar widget contents
+        #sidebar frame contents
         sidebar_layout = QVBoxLayout()
+        sidebar_layout.setContentsMargins(0, 0, 0, 0)
         sidebar_layout.addWidget(QLabel("sidebar widget content"))
         sidebar_frame.setLayout(sidebar_layout)
 
@@ -68,23 +93,22 @@ class MainWindow(QMainWindow):
         splitter.setStretchFactor(0, 1)
         splitter.setCollapsible(0, False)
         splitter.setCollapsible(1, False)
+        splitter.setHandleWidth(padding)
 
         #adding the widgets
         main_layout.addWidget(splitter)
 
+    def display_image(self, image_url, height):
+        print(height)
+        response = requests.get(image_url)
+        image_pixmap = QPixmap()
+        image_pixmap.loadFromData(
+            BytesIO(response.content).read())  # i have absolutely no idea what this does. learn later!
+        my_label = QLabel()
+        my_label.setStyleSheet("padding: 0px; margin: 0px;")
+        my_label.setPixmap(image_pixmap.scaled(height, height))
 
-#print(streaming_data.fetch_most_streamed_song_uri())
-
-
-def display_image(image_url):
-    response = requests.get(image_url)
-    image_pixmap = QPixmap()
-    image_pixmap.loadFromData(
-        BytesIO(response.content).read())  # i have absolutely no idea what this does. learn later!
-
-    my_label = QLabel()
-    my_label.setPixmap(image_pixmap.scaled(300, 300, Qt.KeepAspectRatio))
-    return my_label
+        return my_label
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

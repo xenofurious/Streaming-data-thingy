@@ -99,6 +99,18 @@ class SubCentralFrame(QFrame):
         image_label = self.display_image(image_url, self.height()-2*padding)
         sub_central_layout.addWidget(image_label)
 
+    def display_image(self, image_url, height):
+        response = requests.get(image_url)
+        image_pixmap = QPixmap()
+        image_pixmap.loadFromData(
+            BytesIO(response.content).read())  # i have absolutely no idea what this does. learn later!
+        my_label = QLabel()
+        my_label.setStyleSheet("padding: 0px; margin: 0px;")
+        my_label.setPixmap(image_pixmap.scaled(height, height))
+
+        return my_label
+
+
 class SidebarFrame(QFrame):
     def __init__(self):
         super().__init__()
@@ -115,16 +127,6 @@ class SidebarFrame(QFrame):
         sidebar_layout.addWidget(QLabel("sidebar widget content"))
         self.setLayout(sidebar_layout)
 
-    def display_image(self, image_url, height):
-        response = requests.get(image_url)
-        image_pixmap = QPixmap()
-        image_pixmap.loadFromData(
-            BytesIO(response.content).read())  # i have absolutely no idea what this does. learn later!
-        my_label = QLabel()
-        my_label.setStyleSheet("padding: 0px; margin: 0px;")
-        my_label.setPixmap(image_pixmap.scaled(height, height))
-
-        return my_label
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -17,18 +17,25 @@ padding = 10
 
 #stylesheets - this really should be in its own script at some point.
 big_box_widget_stylesheet_thing = f"""
-            QFrame {{
-                background-color: #444;
-                padding: {padding}px;
-                margin: 0px;
-                }}
-        """
+    QFrame {{
+        background-color: #444;
+        padding: {padding}px;
+        margin: 0px;
+        }}
+"""
 small_box_widget_stylesheet_thing = f"""
     QFrame {{
         background-color: #333;
         padding: {padding}px;
         margin: 0px;
         }}
+"""
+
+test_visualisation_stylesheet = """
+    QFrame{
+        background-color: #FF0000
+    }
+
 """
 
 class main_window(QMainWindow):
@@ -76,28 +83,36 @@ class CentralFrame(QFrame):
         self.setLayout(central_layout)
 
         #adding the subframe
-        sub_central_frame = SubCentralFrame()
+        image_url = streaming_data.fetch_image_from_track(streaming_data.fetch_most_streamed_song_uri(), 2)
+        sub_central_frame = SubCentralFrame(image_url)
         central_layout.addWidget(sub_central_frame)
 
-class SubCentralFrame(QFrame):
-    def __init__(self):
-        super().__init__()
 
-        #central frame subframe
+#when i get multiple different songs working, i'll have to pass the image data as a parameter here!
+class SubCentralFrame(QFrame):
+    def __init__(self, image_url):
+        super().__init__()
+        self.image_url= image_url
+
+        #defining the frame
         self.setFrameShape(QFrame.Box)
         self.setStyleSheet(small_box_widget_stylesheet_thing)
         self.setFixedHeight(100)
 
-
-        #central frame subframe contents
+        #defining the layout
         sub_central_layout = QHBoxLayout()
+        sub_central_layout.setAlignment(Qt.AlignLeft)
         sub_central_layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(sub_central_layout)
 
-
-        image_url = streaming_data.fetch_image_from_track(streaming_data.fetch_most_streamed_song_uri(), 2)
+        #contents!
+        #image_url = streaming_data.fetch_image_from_track(streaming_data.fetch_most_streamed_song_uri(), 2)
         image_label = self.display_image(image_url, self.height()-2*padding)
         sub_central_layout.addWidget(image_label)
+
+        #song/artist info widget!
+        sub_central_layout.addWidget(SubCentralFrameInfo())
+
 
     def display_image(self, image_url, height):
         response = requests.get(image_url)
@@ -107,8 +122,17 @@ class SubCentralFrame(QFrame):
         my_label = QLabel()
         my_label.setStyleSheet("padding: 0px; margin: 0px;")
         my_label.setPixmap(image_pixmap.scaled(height, height))
-
         return my_label
+
+class SubCentralFrameInfo(QFrame):
+    def __init__(self):
+        super().__init__()
+
+        #defining the frame
+        self.setFrameShape(QFrame.VLine)
+
+
+
 
 
 class SidebarFrame(QFrame):

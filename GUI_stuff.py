@@ -2,6 +2,7 @@ from qtpy.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QVBoxLayout, 
 from qtpy.QtGui import QPixmap
 from qtpy.QtCore import Qt
 from io import BytesIO
+from pathlib import Path
 import sys
 import os
 
@@ -15,21 +16,6 @@ os.environ["QT_API"] = "pyqt6"
 #constants
 padding = 10
 
-#stylesheets - this really should be in its own script at some point.
-big_box_widget_stylesheet_thing = f"""
-    QFrame {{
-        background-color: #444;
-        padding: {padding}px;
-        margin: 0px;
-        }}
-"""
-small_box_widget_stylesheet_thing = f"""
-    QFrame {{
-        background-color: #333;
-        padding: {padding}px;
-        margin: 0px;
-        }}
-"""
 
 test_visualisation_stylesheet = """
     QFrame{
@@ -74,7 +60,7 @@ class CentralFrame(QFrame):
 
         # central frame
         self.setFrameShape(QFrame.Box)
-        self.setStyleSheet(big_box_widget_stylesheet_thing)
+        self.setObjectName("big_box_widget_stylesheet_thing")
 
         # central frame contents
         central_layout = QVBoxLayout()
@@ -96,7 +82,7 @@ class SubCentralFrame(QFrame):
 
         #defining the frame
         self.setFrameShape(QFrame.Box)
-        self.setStyleSheet(small_box_widget_stylesheet_thing)
+        self.setObjectName("small_box_widget_stylesheet_thing")
         self.setFixedHeight(100)
 
         #defining the layout
@@ -141,7 +127,7 @@ class SidebarFrame(QFrame):
 
         #sidebar frame
         self.setFrameShape(QFrame.Box)
-        self.setStyleSheet(big_box_widget_stylesheet_thing)
+        self.setObjectName("big_box_widget_stylesheet_thing")
         self.setMinimumWidth(150)
         self.setMaximumWidth(250)
 
@@ -154,6 +140,7 @@ class SidebarFrame(QFrame):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setStyleSheet(Path("styles.qss").read_text().replace("PADDING", str(padding)))
     window = main_window()
     window.show()
     sys.exit(app.exec_())

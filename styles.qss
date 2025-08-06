@@ -1,0 +1,10 @@
+QFrame#big_box_widget_stylesheet_thing {
+    background-color: #444;
+    padding: PADDINGpx;
+    margin: 0px;
+    }
+QFrame#small_box_widget_stylesheet_thing {
+    background-color: #333;
+    padding: PADDINGpx;
+    margin: 0px;
+    }

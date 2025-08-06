@@ -2,3 +2,7 @@
 streaming_history
 .cache
 .idea
+.DS_Store
+__pycache__
+dumbshit
+

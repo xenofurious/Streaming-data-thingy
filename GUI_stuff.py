@@ -1,4 +1,6 @@
-from qtpy.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QVBoxLayout, QFrame, QLabel, QPushButton, QWidget, QDockWidget, QSplitter
+from qtpy.QtWidgets import (QMainWindow, QApplication, QHBoxLayout,
+                            QVBoxLayout, QFrame, QLabel, QPushButton,
+                            QWidget, QDockWidget, QSplitter)
 from qtpy.QtGui import QPixmap
 from qtpy.QtCore import Qt
 from io import BytesIO
@@ -83,7 +85,7 @@ class SubCentralFrame(QFrame):
         #defining the frame
         self.setFrameShape(QFrame.Box)
         self.setObjectName("small_box_widget_stylesheet_thing")
-        self.setFixedHeight(100)
+        self.setFixedHeight(70)
 
         #defining the layout
         sub_central_layout = QHBoxLayout()
@@ -96,8 +98,16 @@ class SubCentralFrame(QFrame):
         image_label = self.display_image(image_url, self.height()-2*padding)
         sub_central_layout.addWidget(image_label)
 
-        #song/artist info widget!
-        sub_central_layout.addWidget(SubCentralFrameInfo())
+        #divider
+        divider = QFrame()
+        divider.setFrameShape(QFrame.VLine)
+        sub_central_layout.addWidget(divider)
+
+        #info!
+        info_frame = InfoFrame()
+        sub_central_layout.addWidget(info_frame, stretch=1)
+
+
 
 
     def display_image(self, image_url, height):
@@ -110,15 +120,22 @@ class SubCentralFrame(QFrame):
         my_label.setPixmap(image_pixmap.scaled(height, height))
         return my_label
 
-class SubCentralFrameInfo(QFrame):
+class InfoFrame(QFrame):
     def __init__(self):
         super().__init__()
 
-        #defining the frame
-        self.setFrameShape(QFrame.VLine)
+        self.setFrameShape(QFrame.NoFrame)
+        self.setStyleSheet("padding: 0px; margin: 0px;")
 
 
-
+        info_frame_layout = QVBoxLayout(self)
+        info_frame_layout.setContentsMargins(0, 0, 0, 0)
+        test_label = QLabel("What The Helly")
+        test_label2 = QLabel("Fucking Idiot")
+        test_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        test_label2.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        info_frame_layout.addWidget(test_label)
+        info_frame_layout.addWidget(test_label2)
 
 
 class SidebarFrame(QFrame):

@@ -1,13 +1,12 @@
 from qtpy.QtWidgets import (QMainWindow, QApplication, QHBoxLayout,
-                            QVBoxLayout, QFrame, QLabel, QPushButton,
-                            QWidget, QDockWidget, QSplitter)
+                            QVBoxLayout, QFrame, QLabel, QScrollArea,
+                            QWidget, QSplitter)
 from qtpy.QtGui import QPixmap
 from qtpy.QtCore import Qt
 from io import BytesIO
 from pathlib import Path
 import sys
 import os
-
 import main as streaming_data
 import requests
 
@@ -15,16 +14,16 @@ import requests
 os.environ["QT_API"] = "pyqt6"
 
 
-#constants
+# constants
 padding = 10
-song_no = 50
+song_no = 10
 
 
-#global variables
-top_50_songs = streaming_data.fetch_top_songs(50)
-top_50_uris = streaming_data.fetch_top_uris(50)
-split_uris = streaming_data.split_uris(top_50_uris)
-
+# other global variables
+top_songs = streaming_data.fetch_top_songs(song_no)
+top_uris = streaming_data.fetch_top_uris(song_no)
+split_uris = streaming_data.split_uris(top_uris, 20)
+top_songs_urls = streaming_data.convert_uri_to_url(streaming_data.fetch_top_uris(padding), 2)
 
 test_visualisation_stylesheet = """
     QFrame{
@@ -39,7 +38,7 @@ class main_window(QMainWindow):
         self.setWindowTitle("My nuts hurt")
         self.setGeometry(100, 100, 800, 600)  # x, y, width, height
 
-        #central container widget
+        # central container widget
         container = QWidget()
         self.setCentralWidget(container)
 
@@ -49,9 +48,14 @@ class main_window(QMainWindow):
         central_frame = CentralFrame()
         sidebar_frame = SidebarFrame()
 
-        #vertical qsplitter between the main window and the sidebar
+        # scroll area
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(central_frame)
+
+        # vertical qsplitter between the main window and the sidebar
         splitter = QSplitter(Qt.Horizontal)
-        splitter.addWidget(central_frame)
+        splitter.addWidget(scroll_area)
         splitter.addWidget(sidebar_frame)
         splitter.setStretchFactor(1,0)
         splitter.setStretchFactor(0, 1)
@@ -59,7 +63,7 @@ class main_window(QMainWindow):
         splitter.setCollapsible(1, False)
         splitter.setHandleWidth(padding)
 
-        #adding the widgets
+        # adding the widgets
         main_layout.addWidget(splitter)
 
 
@@ -77,14 +81,17 @@ class CentralFrame(QFrame):
         central_layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(central_layout)
 
-        #adding the subframe
-        image_url = streaming_data.fetch_image_from_track(streaming_data.fetch_most_streamed_song_uri(), 2)
-        song_artist, song_title = streaming_data.fetch_most_streamed_song()
-        sub_central_frame = SubCentralFrame(image_url, song_artist, song_title)
-        central_layout.addWidget(sub_central_frame)
 
 
-#when i get multiple different songs working, i'll have to pass the image data as a parameter here!
+        # adding the subframe
+        for i in range(song_no):
+            image_url = top_songs_urls.iloc[i]
+            song_artist, song_title = top_songs.iloc[i]
+            sub_central_frame = SubCentralFrame(image_url, song_artist, song_title)
+            central_layout.addWidget(sub_central_frame)
+
+
+# when i get multiple different songs working, i'll have to pass the image data as a parameter here!
 class SubCentralFrame(QFrame):
     def __init__(self, image_url, song_artist, song_title):
         super().__init__()
@@ -93,28 +100,27 @@ class SubCentralFrame(QFrame):
         self.song_title = song_title
 
 
-        #defining the frame
+        # defining the frame
         self.setFrameShape(QFrame.Box)
         self.setObjectName("small_box_widget_stylesheet_thing")
         self.setFixedHeight(70)
 
-        #defining the layout
+        # defining the layout
         sub_central_layout = QHBoxLayout()
         sub_central_layout.setAlignment(Qt.AlignLeft)
         sub_central_layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(sub_central_layout)
 
-        #contents!
-        #image_url = streaming_data.fetch_image_from_track(streaming_data.fetch_most_streamed_song_uri(), 2)
+        # contents!
         image_label = self.display_image(image_url, self.height()-2*padding)
         sub_central_layout.addWidget(image_label)
 
-        #divider
+        # divider
         divider = QFrame()
         divider.setFrameShape(QFrame.VLine)
         sub_central_layout.addWidget(divider)
 
-        #info!
+        # info!
         info_frame = InfoFrame(song_artist, song_title)
         sub_central_layout.addWidget(info_frame, stretch=1)
 
@@ -155,13 +161,13 @@ class SidebarFrame(QFrame):
     def __init__(self):
         super().__init__()
 
-        #sidebar frame
+        # sidebar frame
         self.setFrameShape(QFrame.Box)
         self.setObjectName("big_box_widget_stylesheet_thing")
         self.setMinimumWidth(150)
         self.setMaximumWidth(250)
 
-        #sidebar frame contents
+        # sidebar frame contents
         sidebar_layout = QVBoxLayout()
         sidebar_layout.setContentsMargins(0, 0, 0, 0)
         sidebar_layout.addWidget(QLabel("sidebar widget content"))

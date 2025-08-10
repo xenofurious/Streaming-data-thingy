@@ -53,24 +53,42 @@ def fetch_image_from_track(uri, quality):
 
 #okay actually useful functions
 def fetch_top_uris(number):
-    top_uris = streaming_numbers()['spotify_track_uri'].iloc[:50]
+    top_uris = streaming_numbers()['spotify_track_uri'].iloc[:number]
     return top_uris
 
 def fetch_top_songs(number):
     top_songs = streaming_numbers()[['master_metadata_album_artist_name', 'master_metadata_track_name']].iloc[:50]
     return top_songs
 
+
+
 #essentially the reason why this function is required is because the spotify api only allows the fetching of 20 images at a time, 10 times a second
 #this function returns a list with all of the uris split into groups of 20
-def split_uris(top_uris):
-    #firstly, repeat int(number/20) times
+def split_uris(top_uris, split_no):
+    #firstly, repeat int(number/split_no) times
     number = len(top_uris)
     uri_list = []
-    for lower_bracket in range(0, number-20, 20):
-        upper_bracket = lower_bracket + 20
+    for lower_bracket in range(0, number-split_no, split_no):
+        upper_bracket = lower_bracket + split_no
         uri_list.append(top_uris.iloc[lower_bracket:upper_bracket])
-    uri_list.append(top_uris.iloc[number-(number%20): number])
+    uri_list.append(top_uris.iloc[number-(number%split_no): number])
     return uri_list
+
+#okay so as it turns out, fetching the url from the uri is what causes the api call.
+#for numbers larger than 50, im going to have to re-write this to work with the split uris function.
+def convert_uri_to_url(top_uris, quality):
+    top_urls = top_uris.apply(fetch_image_from_track, quality=quality)
+    return top_urls
+
+
+def fetch_images(split_uris):
+    pass
+
+
+
+
+# TEST CODE!!!!
+
 
 
 #uri = fetch_most_streamed_song_uri()
@@ -78,7 +96,10 @@ def split_uris(top_uris):
 #top_50_songs = fetch_top_songs(50)
 #print(top_50_songs)
 #print(fetch_most_streamed_song())
-print(split_uris(fetch_top_uris(50)))
+#print(split_uris(fetch_top_uris(50)))
+top_urls = convert_uri_to_url(fetch_top_uris(10), 2)
+for url in top_urls:
+    print(url)
 
 
 

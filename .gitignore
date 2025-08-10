@@ -4,3 +4,6 @@ dumbshit
 streaming_history
 lastfm_api_testing
 .venv
+.idea
+__pycache__
+.idea_

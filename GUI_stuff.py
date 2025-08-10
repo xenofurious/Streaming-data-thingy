@@ -17,6 +17,13 @@ os.environ["QT_API"] = "pyqt6"
 
 #constants
 padding = 10
+song_no = 50
+
+
+#global variables
+top_50_songs = streaming_data.fetch_top_songs(50)
+top_50_uris = streaming_data.fetch_top_uris(50)
+split_uris = streaming_data.split_uris(top_50_uris)
 
 
 test_visualisation_stylesheet = """
@@ -72,15 +79,19 @@ class CentralFrame(QFrame):
 
         #adding the subframe
         image_url = streaming_data.fetch_image_from_track(streaming_data.fetch_most_streamed_song_uri(), 2)
-        sub_central_frame = SubCentralFrame(image_url)
+        song_artist, song_title = streaming_data.fetch_most_streamed_song()
+        sub_central_frame = SubCentralFrame(image_url, song_artist, song_title)
         central_layout.addWidget(sub_central_frame)
 
 
 #when i get multiple different songs working, i'll have to pass the image data as a parameter here!
 class SubCentralFrame(QFrame):
-    def __init__(self, image_url):
+    def __init__(self, image_url, song_artist, song_title):
         super().__init__()
-        self.image_url= image_url
+        self.image_url = image_url
+        self.song_artist = song_artist
+        self.song_title = song_title
+
 
         #defining the frame
         self.setFrameShape(QFrame.Box)
@@ -104,7 +115,7 @@ class SubCentralFrame(QFrame):
         sub_central_layout.addWidget(divider)
 
         #info!
-        info_frame = InfoFrame()
+        info_frame = InfoFrame(song_artist, song_title)
         sub_central_layout.addWidget(info_frame, stretch=1)
 
 
@@ -121,8 +132,10 @@ class SubCentralFrame(QFrame):
         return my_label
 
 class InfoFrame(QFrame):
-    def __init__(self):
+    def __init__(self, song_artist, song_title):
         super().__init__()
+        self.song_artist = song_artist
+        self.song_title = song_title
 
         self.setFrameShape(QFrame.NoFrame)
         self.setStyleSheet("padding: 0px; margin: 0px;")
@@ -130,12 +143,12 @@ class InfoFrame(QFrame):
 
         info_frame_layout = QVBoxLayout(self)
         info_frame_layout.setContentsMargins(0, 0, 0, 0)
-        test_label = QLabel("What The Helly")
-        test_label2 = QLabel("Fucking Idiot")
-        test_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
-        test_label2.setAlignment(Qt.AlignTop | Qt.AlignLeft)
-        info_frame_layout.addWidget(test_label)
-        info_frame_layout.addWidget(test_label2)
+        song_title_label = QLabel(song_title)
+        song_artist_label = QLabel(song_artist)
+        song_title_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        song_artist_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        info_frame_layout.addWidget(song_title_label)
+        info_frame_layout.addWidget(song_artist_label)
 
 
 class SidebarFrame(QFrame):
